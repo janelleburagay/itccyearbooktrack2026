@@ -88,28 +88,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
       if (existing) return res.status(409).json({ error: "This Student ID is already registered. Please log in instead." });
       const emailExists = await storage.getSubscriberByEmail(parsed.data.email);
       if (emailExists) return res.status(409).json({ error: "This email is already registered." });
-      // Auto-create a student record if none exists yet
-      const student = await storage.getStudentByStudentId(parsed.data.studentId);
-      if (!student) {
-        await storage.createStudent({
-          studentId: parsed.data.studentId,
-          lastName: parsed.data.lastName,
-          firstName: parsed.data.firstName,
-          middleName: parsed.data.middleName ?? null,
-          middleInitial: null,
-          college: parsed.data.college,
-          course: parsed.data.course,
-          yearOfGraduation: parsed.data.yearOfGraduation,
-          email: parsed.data.email,
-          totalPrice: 600,
-          amountPaid: 0,
-          photoStatus: "pending",
-          photoScheduledDate: null,
-          claimStatus: "unavailable",
-          claimedAt: null,
-          notes: null,
-        });
-      }
+      // createSubscriber handles merging into students collection
       const subscriber = await storage.createSubscriber(parsed.data);
       const displayName = `${subscriber.firstName} ${subscriber.lastName}`;
       res.status(201).json({ id: subscriber.id, name: displayName, firstName: subscriber.firstName, lastName: subscriber.lastName, studentId: subscriber.studentId, email: subscriber.email, course: subscriber.course, yearOfGraduation: subscriber.yearOfGraduation });

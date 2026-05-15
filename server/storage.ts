@@ -7,27 +7,9 @@ import type { Student, InsertStudent, Subscriber, InsertSubscriber, Receipt, Ins
 
 const STUDENTS = "students";
 const ADMINS = "admins";
-const SUBSCRIBERS = "subscribers";
 const RECEIPTS = "receipts";
 
 // ─── Seed on startup ──────────────────────────────────────────────────────────
-async function seedIfEmpty() {
-  try {
-    const snap = await getDocs(query(collection(db, STUDENTS), limit(1)));
-    if (!snap.empty) return;
-    const demos = [
-      { studentId: "20260000001", lastName: "Santos", firstName: "Maria", middleName: "Cruz", middleInitial: "C", college: "College of Computer Studies", course: "Bachelor of Science in Computer Science", yearOfGraduation: "2026", email: "maria@email.com", totalPrice: 600, amountPaid: 0, photoStatus: "completed", photoScheduledDate: null, claimStatus: "ready", claimedAt: null, notes: null },
-      { studentId: "20260000002", lastName: "dela Cruz", firstName: "Juan", middleName: "Reyes", middleInitial: "R", college: "College of Computer Studies", course: "Bachelor of Science in Information Technology", yearOfGraduation: "2026", email: "juan@email.com", totalPrice: 600, amountPaid: 0, photoStatus: "completed", photoScheduledDate: null, claimStatus: "unavailable", claimedAt: null, notes: null },
-      { studentId: "20260000003", lastName: "Reyes", firstName: "Ana", middleName: "Lim", middleInitial: "L", college: "College of Computer Studies", course: "Bachelor of Science in Information Systems", yearOfGraduation: "2026", email: "ana@email.com", totalPrice: 600, amountPaid: 0, photoStatus: "scheduled", photoScheduledDate: "2026-06-15", claimStatus: "unavailable", claimedAt: null, notes: null },
-      { studentId: "20260000004", lastName: "Mendoza", firstName: "Carlo", middleName: null, middleInitial: null, college: "College of Computer Studies", course: "Bachelor of Science in Entertainment and Multimedia Computing", yearOfGraduation: "2027", email: "carlo@email.com", totalPrice: 600, amountPaid: 0, photoStatus: "pending", photoScheduledDate: null, claimStatus: "unavailable", claimedAt: null, notes: null },
-      { studentId: "20260000005", lastName: "Lim", firstName: "Sofia", middleName: "Torres", middleInitial: "T", college: "College of Computer Studies", course: "Bachelor of Science in Computer Science", yearOfGraduation: "2026", email: "sofia@email.com", totalPrice: 600, amountPaid: 0, photoStatus: "completed", photoScheduledDate: null, claimStatus: "claimed", claimedAt: "2026-04-10", notes: null },
-      { studentId: "20260000006", lastName: "Torres", firstName: "Miguel", middleName: "Garcia", middleInitial: "G", college: "College of Computer Studies", course: "Bachelor of Science in Information Technology", yearOfGraduation: "2027", email: "miguel@email.com", totalPrice: 600, amountPaid: 0, photoStatus: "pending", photoScheduledDate: null, claimStatus: "unavailable", claimedAt: null, notes: null },
-    ];
-    for (const d of demos) await addDoc(collection(db, STUDENTS), d);
-    console.log("Seeded demo students");
-  } catch (e) { console.error("Seed error:", e); }
-}
-
 async function seedAdmin() {
   try {
     const snap = await getDocs(query(collection(db, ADMINS), where("username", "==", "admin"), limit(1)));
@@ -37,7 +19,6 @@ async function seedAdmin() {
   } catch (e) { console.error("Admin seed error:", e); }
 }
 
-seedIfEmpty();
 seedAdmin();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -50,15 +31,15 @@ function docToStudent(d: any): Student {
     firstName: data.firstName ?? "",
     middleName: data.middleName ?? null,
     middleInitial: data.middleInitial ?? null,
-    college: data.college ?? "College of Computer Studies",
-    course: data.course ?? "Bachelor of Science in Information Technology",
-    yearOfGraduation: data.yearOfGraduation ?? "2026",
+    college: data.college ?? "",
+    course: data.course ?? "",
+    yearOfGraduation: data.yearOfGraduation ?? "",
     email: data.email ?? null,
-    totalPrice: data.totalPrice,
-    amountPaid: data.amountPaid,
-    photoStatus: data.photoStatus,
+    totalPrice: data.totalPrice ?? 600,
+    amountPaid: data.amountPaid ?? 0,
+    photoStatus: data.photoStatus ?? "pending",
     photoScheduledDate: data.photoScheduledDate ?? null,
-    claimStatus: data.claimStatus,
+    claimStatus: data.claimStatus ?? "unavailable",
     claimedAt: data.claimedAt ?? null,
     notes: data.notes ?? null,
   };
@@ -73,9 +54,9 @@ function docToSubscriber(d: any): Subscriber {
     firstName: data.firstName ?? "",
     middleName: data.middleName ?? null,
     middleInitial: data.middleInitial ?? null,
-    college: data.college ?? "College of Computer Studies",
-    course: data.course ?? "Bachelor of Science in Information Technology",
-    yearOfGraduation: data.yearOfGraduation ?? "2026",
+    college: data.college ?? "",
+    course: data.course ?? "",
+    yearOfGraduation: data.yearOfGraduation ?? "",
     email: data.email,
     password: data.password,
     createdAt: data.createdAt,
@@ -129,18 +110,63 @@ export class Storage {
     return { displayName: d.displayName, password: d.password };
   }
 
-  // ── Subscribers ─────────────────────────────────────────────────────────────
+  // ── Subscribers (stored in students collection) ──────────────────────────────
   async getSubscriberByEmail(email: string): Promise<Subscriber | undefined> {
-    const snap = await getDocs(query(collection(db, SUBSCRIBERS), where("email", "==", email), limit(1)));
-    return snap.empty ? undefined : docToSubscriber(snap.docs[0]);
+    // Only return docs that have a password field (i.e. registered accounts)
+    const snap = await getDocs(query(collection(db, STUDENTS), where("email", "==", email), limit(1)));
+    if (snap.empty) return undefined;
+    const data = snap.docs[0].data();
+    if (!data.password) return undefined;
+    return docToSubscriber(snap.docs[0]);
   }
   async getSubscriberByStudentId(studentId: string): Promise<Subscriber | undefined> {
-    const snap = await getDocs(query(collection(db, SUBSCRIBERS), where("studentId", "==", studentId), limit(1)));
-    return snap.empty ? undefined : docToSubscriber(snap.docs[0]);
+    const snap = await getDocs(query(collection(db, STUDENTS), where("studentId", "==", studentId), limit(1)));
+    if (snap.empty) return undefined;
+    const data = snap.docs[0].data();
+    if (!data.password) return undefined;
+    return docToSubscriber(snap.docs[0]);
   }
   async createSubscriber(data: InsertSubscriber): Promise<Subscriber> {
-    const payload = { ...data, createdAt: new Date().toISOString() };
-    const ref = await addDoc(collection(db, SUBSCRIBERS), payload);
+    // Check if student record already exists — if so, just add auth fields
+    const existing = await getDocs(query(collection(db, STUDENTS), where("studentId", "==", data.studentId), limit(1)));
+    if (!existing.empty) {
+      const ref = existing.docs[0].ref;
+      await updateDoc(ref, {
+        password: data.password,
+        email: data.email,
+        lastName: data.lastName,
+        firstName: data.firstName,
+        middleName: data.middleName ?? null,
+        college: data.college,
+        course: data.course,
+        yearOfGraduation: data.yearOfGraduation,
+        createdAt: new Date().toISOString(),
+      });
+      const snap = await getDoc(ref);
+      return docToSubscriber(snap);
+    }
+    // No existing record — create a full new student+subscriber document
+    const payload = {
+      studentId: data.studentId,
+      lastName: data.lastName,
+      firstName: data.firstName,
+      middleName: data.middleName ?? null,
+      middleInitial: null,
+      college: data.college,
+      course: data.course,
+      yearOfGraduation: data.yearOfGraduation,
+      email: data.email,
+      password: data.password,
+      totalPrice: 600,
+      amountPaid: 0,
+      photoStatus: "pending",
+      photoScheduledDate: null,
+      claimStatus: "unavailable",
+      claimedAt: null,
+      notes: null,
+      createdAt: new Date().toISOString(),
+    };
+    const ref = await addDoc(collection(db, STUDENTS), payload);
     return docToSubscriber(await getDoc(ref));
   }
 

@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import type { Student, Receipt as ReceiptType } from "@shared/schema";
-import { COURSES, COLLEGE, GRAD_YEARS, fullName } from "@shared/schema";
+import { COURSES, COLLEGES, GRAD_YEARS, fullName } from "@shared/schema";
 
 function openImage(base64: string, mimeType: string) {
   const byteChars = atob(base64);
@@ -37,7 +37,7 @@ const emptyForm = {
   lastName: "",
   firstName: "",
   middleName: "",
-  college: COLLEGE,
+  college: "" as typeof COLLEGES[number] | "",
   course: "" as typeof COURSES[number] | "",
   yearOfGraduation: "",
   email: "",
@@ -135,7 +135,7 @@ export default function AdminDashboard() {
       lastName: s.lastName,
       firstName: s.firstName,
       middleName: s.middleName || "",
-      college: s.college || COLLEGE,
+      college: (s.college as typeof COLLEGES[number]) || "",
       course: (s.course as typeof COURSES[number]) || "",
       yearOfGraduation: s.yearOfGraduation || "",
       email: s.email || "",
@@ -154,7 +154,6 @@ export default function AdminDashboard() {
     e.preventDefault();
     const payload = {
       ...form,
-      college: COLLEGE,
       totalPrice: Number(form.totalPrice),
       amountPaid: Number(form.amountPaid),
       photoScheduledDate: form.photoScheduledDate || null,
@@ -357,10 +356,15 @@ export default function AdminDashboard() {
               <Input value={form.middleName} onChange={e => setForm(f => ({ ...f, middleName: e.target.value }))} placeholder="Cruz" data-testid="input-form-middle-name" />
             </div>
 
-            {/* College (read-only display) */}
+            {/* College dropdown */}
             <div className="space-y-1.5">
-              <Label>College</Label>
-              <Input value={COLLEGE} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" data-testid="input-form-college" />
+              <Label>College *</Label>
+              <Select value={form.college} onValueChange={v => setForm(f => ({ ...f, college: v as typeof COLLEGES[number] }))}>
+                <SelectTrigger data-testid="select-form-college"><SelectValue placeholder="Select college" /></SelectTrigger>
+                <SelectContent>
+                  {COLLEGES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Course dropdown */}

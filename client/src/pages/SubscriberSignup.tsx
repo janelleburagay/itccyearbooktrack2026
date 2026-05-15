@@ -9,14 +9,14 @@ import NavBar from "@/components/NavBar";
 import Logo from "@/components/Logo";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { COURSES, COLLEGE, GRAD_YEARS } from "@shared/schema";
+import { COURSES, COLLEGES, GRAD_YEARS } from "@shared/schema";
 
 const emptyForm = {
   studentId: "",
   lastName: "",
   firstName: "",
   middleName: "",
-  college: COLLEGE,
+  college: "" as string,
   course: "" as string,
   yearOfGraduation: "",
   email: "",
@@ -36,6 +36,7 @@ export default function SubscriberSignup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.college) { toast({ title: "Please select a college", variant: "destructive" }); return; }
     if (!form.course) { toast({ title: "Please select a course", variant: "destructive" }); return; }
     if (!form.yearOfGraduation) { toast({ title: "Please select year of graduation", variant: "destructive" }); return; }
     if (form.password !== form.confirm) { toast({ title: "Passwords don't match", variant: "destructive" }); return; }
@@ -50,7 +51,7 @@ export default function SubscriberSignup() {
         lastName: form.lastName.trim(),
         firstName: form.firstName.trim(),
         middleName: form.middleName.trim() || null,
-        college: COLLEGE,
+        college: form.college,
         course: form.course,
         yearOfGraduation: form.yearOfGraduation,
         email: form.email.trim(),
@@ -117,10 +118,17 @@ export default function SubscriberSignup() {
               </div>
             </div>
 
-            {/* College — fixed */}
+            {/* College dropdown */}
             <div className="space-y-1.5">
-              <Label>College</Label>
-              <Input value={COLLEGE} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+              <Label>College *</Label>
+              <Select value={form.college} onValueChange={v => setForm(f => ({ ...f, college: v }))}>
+                <SelectTrigger data-testid="select-college">
+                  <SelectValue placeholder="Select your college" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COLLEGES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Course dropdown */}

@@ -7,6 +7,11 @@ export const COURSES = [
   "Bachelor of Science in Entertainment and Multimedia Computing",
 ] as const;
 
+export const COLLEGES = [
+  "College of Computer Studies",
+] as const;
+
+// Keep for backward compat
 export const COLLEGE = "College of Computer Studies";
 
 export const GRAD_YEARS = ["2026", "2027", "2028", "2029", "2030"] as const;
@@ -18,7 +23,7 @@ export const insertStudentSchema = z.object({
   firstName: z.string().min(1),
   middleName: z.string().nullable().optional(),
   middleInitial: z.string().nullable().optional(),
-  college: z.string().default(COLLEGE),
+  college: z.enum(COLLEGES),
   course: z.enum(COURSES),
   yearOfGraduation: z.string().min(4),
   email: z.string().email().nullable().optional(),
@@ -50,7 +55,7 @@ export const insertSubscriberSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().nullable().optional(),
   middleInitial: z.string().nullable().optional(),
-  college: z.string().default(COLLEGE),
+  college: z.enum(COLLEGES, { errorMap: () => ({ message: "Please select a college" }) }),
   course: z.enum(COURSES, { errorMap: () => ({ message: "Please select a course" }) }),
   yearOfGraduation: z.string().min(4, "Select graduation year"),
   email: z.string().email("Invalid email"),
