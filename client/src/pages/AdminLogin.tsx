@@ -103,9 +103,7 @@ export default function AdminLogin() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
 
-            <p className="text-center text-xs text-muted-foreground pt-1">
-              Demo: <code className="bg-muted px-1 rounded">admin</code> / <code className="bg-muted px-1 rounded">yearbook2024</code>
-            </p>
+
           </form>
         </div>
       </div>
