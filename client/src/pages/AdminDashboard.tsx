@@ -28,7 +28,6 @@ const emptyForm = {
   lastName: "",
   firstName: "",
   middleName: "",
-  middleInitial: "",
   college: COLLEGE,
   course: "" as typeof COURSES[number] | "",
   yearOfGraduation: "",
@@ -127,7 +126,6 @@ export default function AdminDashboard() {
       lastName: s.lastName,
       firstName: s.firstName,
       middleName: s.middleName || "",
-      middleInitial: s.middleInitial || "",
       college: s.college || COLLEGE,
       course: (s.course as typeof COURSES[number]) || "",
       yearOfGraduation: s.yearOfGraduation || "",
@@ -155,7 +153,6 @@ export default function AdminDashboard() {
       email: form.email || null,
       notes: form.notes || null,
       middleName: form.middleName || null,
-      middleInitial: form.middleInitial || null,
     };
     if (editStudent) updateMutation.mutate({ id: editStudent.id, data: payload });
     else createMutation.mutate(payload);
@@ -346,15 +343,9 @@ export default function AdminDashboard() {
                 <Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} placeholder="Maria" required data-testid="input-form-first-name" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Middle Name</Label>
-                <Input value={form.middleName} onChange={e => setForm(f => ({ ...f, middleName: e.target.value }))} placeholder="Cruz" data-testid="input-form-middle-name" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Middle Initial</Label>
-                <Input value={form.middleInitial} onChange={e => setForm(f => ({ ...f, middleInitial: e.target.value }))} placeholder="C" maxLength={2} data-testid="input-form-middle-initial" />
-              </div>
+            <div className="space-y-1.5">
+              <Label>Middle Name</Label>
+              <Input value={form.middleName} onChange={e => setForm(f => ({ ...f, middleName: e.target.value }))} placeholder="Cruz" data-testid="input-form-middle-name" />
             </div>
 
             {/* College (read-only display) */}

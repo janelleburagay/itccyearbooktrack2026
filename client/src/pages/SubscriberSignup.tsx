@@ -16,7 +16,6 @@ const emptyForm = {
   lastName: "",
   firstName: "",
   middleName: "",
-  middleInitial: "",
   college: COLLEGE,
   course: "" as string,
   yearOfGraduation: "",
@@ -51,7 +50,6 @@ export default function SubscriberSignup() {
         lastName: form.lastName.trim(),
         firstName: form.firstName.trim(),
         middleName: form.middleName.trim() || null,
-        middleInitial: form.middleInitial.trim() || null,
         college: COLLEGE,
         course: form.course,
         yearOfGraduation: form.yearOfGraduation,
@@ -113,15 +111,9 @@ export default function SubscriberSignup() {
                   <Input id="firstName" value={form.firstName} onChange={set("firstName")} placeholder="Maria" required data-testid="input-first-name" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="middleName" className="text-xs text-muted-foreground">Middle Name</Label>
-                  <Input id="middleName" value={form.middleName} onChange={set("middleName")} placeholder="Cruz" data-testid="input-middle-name" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="middleInitial" className="text-xs text-muted-foreground">Middle Initial</Label>
-                  <Input id="middleInitial" value={form.middleInitial} onChange={set("middleInitial")} placeholder="C" maxLength={2} data-testid="input-middle-initial" />
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="middleName" className="text-xs text-muted-foreground">Middle Name</Label>
+                <Input id="middleName" value={form.middleName} onChange={set("middleName")} placeholder="Cruz" data-testid="input-middle-name" />
               </div>
             </div>
 
