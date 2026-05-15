@@ -100,7 +100,11 @@ export class Storage {
   async searchStudents(q: string): Promise<Student[]> {
     const snap = await getDocs(collection(db, STUDENTS));
     const lq = q.toLowerCase();
-    return snap.docs.map(docToStudent).filter(s => s.name.toLowerCase().includes(lq) || s.studentId.toLowerCase().includes(lq) || s.section.toLowerCase().includes(lq));
+    return snap.docs.map(docToStudent).filter(s =>
+      `${s.firstName} ${s.lastName}`.toLowerCase().includes(lq) ||
+      s.studentId.toLowerCase().includes(lq) ||
+      (s.course ?? "").toLowerCase().includes(lq)
+    );
   }
   async createStudent(data: InsertStudent): Promise<Student> {
     const ref = await addDoc(collection(db, STUDENTS), data);

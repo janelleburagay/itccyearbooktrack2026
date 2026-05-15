@@ -83,15 +83,36 @@ export function registerRoutes(httpServer: Server, app: Express) {
     const parsed = insertSubscriberSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
     try {
-      const student = await storage.getStudentByStudentId(parsed.data.studentId);
-      if (!student) return res.status(404).json({ error: "Student ID not found in records. Please contact your yearbook coordinator." });
+      // Check for duplicate subscriber accounts
       const existing = await storage.getSubscriberByStudentId(parsed.data.studentId);
       if (existing) return res.status(409).json({ error: "This Student ID is already registered. Please log in instead." });
       const emailExists = await storage.getSubscriberByEmail(parsed.data.email);
       if (emailExists) return res.status(409).json({ error: "This email is already registered." });
+      // Auto-create a student record if none exists yet
+      const student = await storage.getStudentByStudentId(parsed.data.studentId);
+      if (!student) {
+        await storage.createStudent({
+          studentId: parsed.data.studentId,
+          lastName: parsed.data.lastName,
+          firstName: parsed.data.firstName,
+          middleName: parsed.data.middleName ?? null,
+          middleInitial: null,
+          college: parsed.data.college,
+          course: parsed.data.course,
+          yearOfGraduation: parsed.data.yearOfGraduation,
+          email: parsed.data.email,
+          totalPrice: 600,
+          amountPaid: 0,
+          photoStatus: "pending",
+          photoScheduledDate: null,
+          claimStatus: "unavailable",
+          claimedAt: null,
+          notes: null,
+        });
+      }
       const subscriber = await storage.createSubscriber(parsed.data);
       const displayName = `${subscriber.firstName} ${subscriber.lastName}`;
-      res.status(201).json({ id: subscriber.id, name: displayName, firstName: subscriber.firstName, lastName: subscriber.lastName, middleInitial: subscriber.middleInitial, studentId: subscriber.studentId, email: subscriber.email, course: subscriber.course, yearOfGraduation: subscriber.yearOfGraduation });
+      res.status(201).json({ id: subscriber.id, name: displayName, firstName: subscriber.firstName, lastName: subscriber.lastName, studentId: subscriber.studentId, email: subscriber.email, course: subscriber.course, yearOfGraduation: subscriber.yearOfGraduation });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
@@ -103,7 +124,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
       const subscriber = await storage.getSubscriberByEmail(email);
       if (!subscriber || subscriber.password !== password) return res.status(401).json({ error: "Invalid email or password" });
       const displayName = `${subscriber.firstName} ${subscriber.lastName}`;
-      res.json({ id: subscriber.id, name: displayName, firstName: subscriber.firstName, lastName: subscriber.lastName, middleInitial: subscriber.middleInitial, studentId: subscriber.studentId, email: subscriber.email, course: subscriber.course, yearOfGraduation: subscriber.yearOfGraduation });
+      res.json({ id: subscriber.id, name: displayName, firstName: subscriber.firstName, lastName: subscriber.lastName, studentId: subscriber.studentId, email: subscriber.email, course: subscriber.course, yearOfGraduation: subscriber.yearOfGraduation });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
