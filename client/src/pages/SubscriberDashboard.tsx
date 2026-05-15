@@ -13,6 +13,15 @@ import { useToast } from "@/hooks/use-toast";
 import NavBar from "@/components/NavBar";
 import type { Student, Receipt as ReceiptType } from "@shared/schema";
 
+function openImage(base64: string, mimeType: string) {
+  const byteChars = atob(base64);
+  const byteArr = new Uint8Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+  const blob = new Blob([byteArr], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
+}
+
 function StatusIcon({ status }: { status: string }) {
   if (["completed", "paid", "claimed", "fully_paid"].includes(status)) return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
   if (["scheduled", "ready", "partial"].includes(status)) return <Clock className="w-5 h-5 text-blue-500" />;
@@ -260,7 +269,7 @@ export default function SubscriberDashboard() {
             <div className="divide-y divide-border">
               {receipts.map(r => (
                 <div key={r.id} className="p-4 flex items-start gap-4" data-testid={`row-receipt-${r.id}`}>
-                  <img src={`data:${r.imageType};base64,${r.imageBase64}`} alt="Receipt" className="w-16 h-16 rounded-lg object-cover border border-border shrink-0 cursor-pointer hover:opacity-80" onClick={() => window.open(`data:${r.imageType};base64,${r.imageBase64}`, "_blank")} />
+                  <img src={`data:${r.imageType};base64,${r.imageBase64}`} alt="Receipt" className="w-16 h-16 rounded-lg object-cover border border-border shrink-0 cursor-pointer hover:opacity-80" onClick={() => openImage(r.imageBase64, r.imageType)} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       {verifyBadge(r.verifiedStatus)}

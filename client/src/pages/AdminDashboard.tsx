@@ -19,6 +19,15 @@ import { useToast } from "@/hooks/use-toast";
 import type { Student, Receipt as ReceiptType } from "@shared/schema";
 import { COURSES, COLLEGE, GRAD_YEARS, fullName } from "@shared/schema";
 
+function openImage(base64: string, mimeType: string) {
+  const byteChars = atob(base64);
+  const byteArr = new Uint8Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+  const blob = new Blob([byteArr], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
+}
+
 const photoOpts = ["pending", "scheduled", "completed"];
 const claimOpts = ["unavailable", "ready", "claimed"];
 const photoLabels: Record<string, string> = { pending: "Pending", scheduled: "Scheduled", completed: "Completed" };
@@ -284,7 +293,7 @@ export default function AdminDashboard() {
                 <div className="divide-y divide-border">
                   {receipts.map(r => (
                     <div key={r.id} className="p-5 flex items-start gap-5 flex-wrap" data-testid={`row-receipt-${r.id}`}>
-                      <img src={`data:${r.imageType};base64,${r.imageBase64}`} alt="Receipt" className="w-20 h-20 rounded-xl object-cover border border-border shrink-0 cursor-pointer hover:opacity-80" onClick={() => window.open(`data:${r.imageType};base64,${r.imageBase64}`, "_blank")} />
+                      <img src={`data:${r.imageType};base64,${r.imageBase64}`} alt="Receipt" className="w-20 h-20 rounded-xl object-cover border border-border shrink-0 cursor-pointer hover:opacity-80" onClick={() => openImage(r.imageBase64, r.imageType)} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-semibold text-sm">{r.studentName}</span>
@@ -418,7 +427,7 @@ export default function AdminDashboard() {
           {verifyReceipt && (
             <div className="space-y-4 py-2">
               <div className="flex gap-3 items-start">
-                <img src={`data:${verifyReceipt.imageType};base64,${verifyReceipt.imageBase64}`} alt="Receipt" className="w-24 h-24 rounded-xl object-cover border border-border cursor-pointer" onClick={() => window.open(`data:${verifyReceipt.imageType};base64,${verifyReceipt.imageBase64}`, "_blank")} />
+                <img src={`data:${verifyReceipt.imageType};base64,${verifyReceipt.imageBase64}`} alt="Receipt" className="w-24 h-24 rounded-xl object-cover border border-border cursor-pointer" onClick={() => openImage(verifyReceipt.imageBase64, verifyReceipt.imageType)} />
                 <div>
                   <p className="font-semibold">{verifyReceipt.studentName}</p>
                   <p className="text-sm text-muted-foreground">{verifyReceipt.studentId}</p>
